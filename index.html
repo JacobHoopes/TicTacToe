@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Tic-Tac-Toe</title>
+
+    <style>
+      body { margin: 0; padding-bottom: 3rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+      
+      #base { background: #3e488acc; position: fixed; padding: 15px; border-radius: 3px; left: 45px; top: 45px; width: 340px; height: 330px/*top: 50%; left: 50%; width: 20%; height: 20%; transform: translate(-50%,-50%)*/}
+      #base > button {background: #333; position: sticky; border: none; width: 100px; height: 100px; margin: 5px; border-radius: 3px; outline: 'none'; color: #fff; font-size: 60px}
+      
+      #reset {background: #d91616cc; position: absolute; vertical-align: middle; border-radius: 3px; left: 179px; top: 430px; width: 100px; height: 35px; font-size: 25px; text-align: center}
+
+      #turnCounter {background: rgba(216, 149, 34, 0.8); position: absolute; border-radius: 3px; padding: 15px; left: 450px; top: 185px; width: 350px; height: 53px; font-size: 40px}
+
+    </style>
+  </head>
+  <body>
+    <form id="base" action="">
+      <button id="1"></button>
+      <button id="2"></button>
+      <button id="3"></button>
+      <button id="4"></button>
+      <button id="5"></button>
+      <button id="6"></button>
+      <button id="7"></button>
+      <button id="8"></button>
+      <button id="9"></button>
+    </form>
+    <button id="reset" type="button">reset</button>
+    <il id="turnCounter">Loading...</il>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+
+      var socket = io();
+      window.addEventListener('onload', (event) => {
+        console.log(socket.id);
+        socket.emit('get player id', socket.id);
+       
+      });
+
+      window.addEventListener('click', function(e) {
+        e.preventDefault();
+        e = window.event;
+        var target = e.target,
+          text = target.innerText;
+      }, false);
+
+      window.onclick = e => {
+        id = e.target.id;
+        if (id==1 || id==2 || id==3 || id==4 || id==5 || id==6 || id==7 || id==8 || id==9) {
+          socket.emit('play', id);
+        } else if (id=='reset') {
+          socket.emit('reset');
+        }
+      }
+
+      socket.on('turn state', function(yourTurn) {
+        let turnC = document.getElementById('turnCounter');
+        let turnStatement = `Not your turn yet`;
+        if (yourTurn) {
+          turnStatement = 'Your turn!'
+          turnC.style.background = 'rgba(41, 160, 49, 0.8)';
+        } else {
+          turnC.style.background = 'rgba(216, 149, 34, 0.8)';
+        }
+        turnC.textContent = turnStatement;
+      });
+     
+      socket.on('board state', function(newBoardState) {
+        for (let i=0; i<9; i++) {
+          let item = document.getElementById(i+1);
+          item.textContent = newBoardState[i];
+        }
+      });
+
+        
+    </script>
+  </body>
+</html>
